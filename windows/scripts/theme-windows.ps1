@@ -263,7 +263,7 @@ function Set-DreamSkinActiveTheme {
   if ($null -eq $Theme) {
     $Theme = [pscustomobject]@{
       id = 'custom'
-      name = '自定义主题'
+      name = 'カスタムテーマ'
       appearance = 'auto'
       art = [pscustomobject]@{ focusX = $null; focusY = $null; safeArea = 'auto'; taskMode = 'auto' }
       palette = [pscustomobject]@{}

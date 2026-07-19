@@ -50,7 +50,9 @@ try {
 
   function Add-DreamSkinTrayItem {
     param(
-      [Parameter(Mandatory = $true)][System.Windows.Forms.ToolStripItemCollection]$Items,
+      [Parameter(Mandatory = $true)]
+      [AllowEmptyCollection()]
+      [System.Windows.Forms.ToolStripItemCollection]$Items,
       [Parameter(Mandatory = $true)][string]$Text,
       [AllowNull()][scriptblock]$Action,
       [bool]$Enabled = $true
@@ -73,50 +75,50 @@ try {
     try { $state = Read-DreamSkinState -Path $paths.State } catch {}
     $active = $null
     try { $active = Read-DreamSkinTheme -ThemeDirectory $paths.Active -SkipImageMetadata } catch {}
-    $status = if ($paused) { '状态：已暂停' } elseif ($state) { '状态：运行中' } else { '状态：未运行' }
+    $status = if ($paused) { 'ステータス: 一時停止' } elseif ($state) { 'ステータス: 実行中' } else { 'ステータス: 停止中' }
     if ($null -ne $active -and $null -ne $active.Theme -and $active.Theme.name) {
       $status += " · $($active.Theme.name)"
     }
     $null = Add-DreamSkinTrayItem -Items $menu.Items -Text $status -Action $null -Enabled $false
     [void]$menu.Items.Add([System.Windows.Forms.ToolStripSeparator]::new())
 
-    $null = Add-DreamSkinTrayItem -Items $menu.Items -Text '应用或重新应用' -Action {
+    $null = Add-DreamSkinTrayItem -Items $menu.Items -Text 'テーマを適用' -Action {
       Set-DreamSkinPaused -Paused $false -StateRoot $StateRoot | Out-Null
       Start-DreamSkinPowerShell -Script $startScript -Arguments @('-Port', "$Port", '-PromptRestart')
     }
-    $pauseText = if ($paused) { '继续显示皮肤' } else { '暂停皮肤' }
+    $pauseText = if ($paused) { 'テーマを再開' } else { 'テーマを一時停止' }
     $nextPaused = -not $paused
     $pauseAction = {
       Set-DreamSkinPaused -Paused $nextPaused -StateRoot $StateRoot | Out-Null
     }.GetNewClosure()
     $null = Add-DreamSkinTrayItem -Items $menu.Items -Text $pauseText -Action $pauseAction
-    $null = Add-DreamSkinTrayItem -Items $menu.Items -Text '更换背景图' -Action {
+    $null = Add-DreamSkinTrayItem -Items $menu.Items -Text '背景画像を変更' -Action {
       $dialog = [System.Windows.Forms.OpenFileDialog]::new()
-      $dialog.Title = '选择 Codex Dream Skin 背景图'
+      $dialog.Title = '背景画像を選択してください'
       $dialog.Filter = 'Image files|*.png;*.jpg;*.jpeg;*.webp|All files|*.*'
       $dialog.Multiselect = $false
       try {
         if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
           $null = Set-DreamSkinActiveTheme -ImagePath $dialog.FileName -Theme $null -StateRoot $StateRoot
           Set-DreamSkinPaused -Paused $false -StateRoot $StateRoot | Out-Null
-          $notify.ShowBalloonTip(1800, 'Codex Dream Skin', '背景图已更新。', [System.Windows.Forms.ToolTipIcon]::Info)
+          $notify.ShowBalloonTip(1800, 'Codex Dream Skin', '背景画像が変更されました。', [System.Windows.Forms.ToolTipIcon]::Info)
         }
       } finally {
         $dialog.Dispose()
       }
     }
-    $null = Add-DreamSkinTrayItem -Items $menu.Items -Text '保存当前主题' -Action {
-      $name = [Microsoft.VisualBasic.Interaction]::InputBox('输入主题名称：', '保存 Codex Dream Skin 主题', '')
+    $null = Add-DreamSkinTrayItem -Items $menu.Items -Text '現在の変更を保存' -Action {
+      $name = [Microsoft.VisualBasic.Interaction]::InputBox('Enter a theme name:', 'Save Codex Dream Skin Theme', '')
       if ($name.Trim()) {
         $saved = Save-DreamSkinCurrentTheme -Name $name -StateRoot $StateRoot
-        $notify.ShowBalloonTip(1800, 'Codex Dream Skin', "已保存：$($saved.Theme.name)", [System.Windows.Forms.ToolTipIcon]::Info)
+        $notify.ShowBalloonTip(1800, 'Codex Dream Skin', "保存済み: $($saved.Theme.name)", [System.Windows.Forms.ToolTipIcon]::Info)
       }
     }
 
-    $savedMenu = [System.Windows.Forms.ToolStripMenuItem]::new('已保存主题')
+    $savedMenu = [System.Windows.Forms.ToolStripMenuItem]::new('保存したテーマ')
     $savedThemes = @(Get-DreamSkinSavedThemes -StateRoot $StateRoot -SkipImageMetadata)
     if ($savedThemes.Count -eq 0) {
-      $empty = [System.Windows.Forms.ToolStripMenuItem]::new('暂无已保存主题')
+      $empty = [System.Windows.Forms.ToolStripMenuItem]::new('保存したテーマはありません')
       $empty.Enabled = $false
       [void]$savedMenu.DropDownItems.Add($empty)
     } else {
@@ -126,25 +128,25 @@ try {
         $savedAction = {
           $null = Use-DreamSkinSavedTheme -ThemeDirectory $savedPath -StateRoot $StateRoot
           Set-DreamSkinPaused -Paused $false -StateRoot $StateRoot | Out-Null
-          $notify.ShowBalloonTip(1800, 'Codex Dream Skin', "已应用：$savedName", [System.Windows.Forms.ToolTipIcon]::Info)
+          $notify.ShowBalloonTip(1800, 'Codex Dream Skin', "適用済み: $savedName", [System.Windows.Forms.ToolTipIcon]::Info)
         }.GetNewClosure()
         $null = Add-DreamSkinTrayItem -Items $savedMenu.DropDownItems -Text $savedName -Action $savedAction
       }
     }
     [void]$menu.Items.Add($savedMenu)
 
-    $null = Add-DreamSkinTrayItem -Items $menu.Items -Text '打开图片文件夹' -Action {
+    $null = Add-DreamSkinTrayItem -Items $menu.Items -Text '画像フォルダを開く' -Action {
       Start-Process -FilePath explorer.exe -ArgumentList @($paths.Images) | Out-Null
     }
     [void]$menu.Items.Add([System.Windows.Forms.ToolStripSeparator]::new())
-    $null = Add-DreamSkinTrayItem -Items $menu.Items -Text '完全恢复 Codex' -Action {
+    $null = Add-DreamSkinTrayItem -Items $menu.Items -Text 'ChatGPTを復元' -Action {
       Start-DreamSkinPowerShell -Script $restoreScript -Arguments @(
         '-Port', "$Port", '-RestoreBaseTheme', '-PromptRestart'
       )
       $notify.Visible = $false
       [System.Windows.Forms.Application]::Exit()
     }
-    $null = Add-DreamSkinTrayItem -Items $menu.Items -Text '退出托盘' -Action {
+    $null = Add-DreamSkinTrayItem -Items $menu.Items -Text 'タスクトレイを終了' -Action {
       $notify.Visible = $false
       [System.Windows.Forms.Application]::Exit()
     }
