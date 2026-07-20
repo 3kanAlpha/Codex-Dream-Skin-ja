@@ -667,9 +667,9 @@ function nextOperationToken() {
 }
 
 function operationKindMessage(kind) {
-  if (kind === "pause") return "正在暂停皮肤…";
-  if (kind === "switch") return "正在切换主题…";
-  return "正在应用皮肤…";
+  if (kind === "pause") return "スキンを一時停止しています…";
+  if (kind === "switch") return "テーマを切り替えています…";
+  return "スキンを適用しています…";
 }
 
 function operationUiExpression(action, token, state = "loading", message = "") {
@@ -979,7 +979,9 @@ async function runOneShot(options) {
     ? options.operationToken ?? nextOperationToken()
     : null;
   if (operationToken) {
-    const message = options.mode === "remove" ? "正在暂停皮肤…" : "正在准备皮肤…";
+    const message = options.mode === "remove"
+      ? "スキンを一時停止しています…"
+      : "スキンを準備しています…";
     const action = options.operationToken ? presentOperationUi : (session, token, state, text) =>
       bestEffortOperationUi(session, "show", token, state, text);
     await Promise.all(connected.map(({ session }) => action(
@@ -993,7 +995,7 @@ async function runOneShot(options) {
   } catch (error) {
     if (operationToken) {
       await Promise.all(connected.map(({ session }) => presentOperationUi(
-        session, operationToken, "error", "皮肤准备失败",
+        session, operationToken, "error", "スキンの準備に失敗しました",
       )));
     }
     for (const { session } of connected) session.close();
@@ -1010,7 +1012,7 @@ async function runOneShot(options) {
           if (operationToken) {
             await bestEffortOperationUi(
               session, "update", operationToken, "loading",
-              `正在应用「${loadedPayload.theme.name}」…`,
+              `「${loadedPayload.theme.name}」を適用しています…`,
             );
           }
           await applyToSession(session, payload);
@@ -1023,7 +1025,7 @@ async function runOneShot(options) {
             if (operationToken) {
               await presentOperationUi(
                 session, operationToken, "loading",
-                `正在应用「${loadedPayload.theme.name}」…`,
+                `「${loadedPayload.theme.name}」を適用しています…`,
               );
             }
             await applyToSession(session, payload);
@@ -1034,7 +1036,9 @@ async function runOneShot(options) {
             session,
             operationToken,
             "loading",
-            options.mode === "remove" ? "正在确认皮肤已暂停…" : "正在检查显示效果…",
+            options.mode === "remove"
+              ? "スキンが一時停止されたことを確認しています…"
+              : "表示を確認しています…",
           );
         }
         const verified = options.mode === "remove"
@@ -1050,8 +1054,12 @@ async function runOneShot(options) {
             operationToken,
             passed ? "success" : "error",
             passed
-              ? options.mode === "remove" ? "皮肤已暂停" : `已应用「${loadedPayload.theme.name}」`
-              : options.mode === "remove" ? "暂停校验失败" : "显示校验失败",
+              ? options.mode === "remove"
+                ? "スキンを一時停止しました"
+                : `「${loadedPayload.theme.name}」を適用しました`
+              : options.mode === "remove"
+                ? "一時停止の確認に失敗しました"
+                : "表示の確認に失敗しました",
           );
         }
         if (options.screenshot && !screenshotCaptured) {
@@ -1067,7 +1075,9 @@ async function runOneShot(options) {
             session,
             operationToken,
             "error",
-            options.mode === "remove" ? "暂停失败，请重试" : "应用失败，请重试",
+            options.mode === "remove"
+              ? "一時停止に失敗しました。再試行してください"
+              : "適用に失敗しました。再試行してください",
           );
         }
         results.push({ targetId: target.id, markers: probe?.markers, error: error.message });

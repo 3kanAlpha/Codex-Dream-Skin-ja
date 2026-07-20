@@ -748,7 +748,6 @@ try {
   $css = Read-DreamSkinUtf8File -Path (Join-Path $Root 'assets\dream-skin.css')
   foreach ($requiredCss in @(
     'background-image: var(--dream-art)',
-    'main.main-surface > header.app-header-tint',
     '[class~="group/application-menu-top-bar"]',
     '.app-shell-main-content-top-fade',
     '.thread-scroll-container .bg-gradient-to-t.from-token-main-surface-primary',
@@ -760,8 +759,19 @@ try {
   )) {
     if (-not $css.Contains($requiredCss)) { throw "Windows immersive CSS is missing: $requiredCss" }
   }
+  if ($css -notmatch 'main\.main-surface\s*>\s*header\.app-header-tint') {
+    throw 'Windows immersive CSS is missing the native app-header styling contract.'
+  }
   $traySource = Read-DreamSkinUtf8File -Path (Join-Path $Root 'scripts\tray-dream-skin.ps1')
-  foreach ($requiredTrayAction in @('System.Windows.Forms.NotifyIcon', 'テーマを一時停止', '背景画像を変更', '保存したテーマ', 'ChatGPTを復元')) {
+  foreach ($requiredTrayAction in @(
+    'System.Windows.Forms.NotifyIcon',
+    'テーマを一時停止',
+    'テーマを再開',
+    '背景画像を変更',
+    'テーマ名を入力してください:',
+    '保存したテーマ',
+    'ChatGPTを復元'
+  )) {
     if (-not $traySource.Contains($requiredTrayAction)) { throw "Tray action is missing: $requiredTrayAction" }
   }
   if (-not $traySource.Contains('Invoke-DreamSkinLiveRemove') -or
@@ -788,12 +798,24 @@ try {
     'chatgpt-dream-skin-operation',
     'begin-operation',
     'finish-operation',
-    '正在暂停皮肤…',
+    'スキンを一時停止しています…',
     'presentOperationUi',
     'operationUiExpression'
   )) {
     if (-not $injectorSource.Contains($requiredOperationUi)) {
       throw "Windows injector operation UI is missing: $requiredOperationUi"
+    }
+  }
+  foreach ($untranslatedOperationUi in @(
+    '正在暂停皮肤',
+    '正在应用皮肤',
+    '皮肤已暂停',
+    '暂停失败'
+  )) {
+    if ($injectorSource.Contains($untranslatedOperationUi) -or
+      $traySource.Contains($untranslatedOperationUi) -or
+      $themeWindowsSource.Contains($untranslatedOperationUi)) {
+      throw "Windows operation UI contains untranslated text: $untranslatedOperationUi"
     }
   }
   if ([regex]::Matches($traySource, '-ExecutionPolicy RemoteSigned').Count -ne 1 -or

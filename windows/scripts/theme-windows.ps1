@@ -477,7 +477,7 @@ function Show-DreamSkinOperationUi {
     $probe = Invoke-DreamSkinNative -FilePath $Session.NodePath -ArgumentList $argumentList -DiscardStderr
     $printed = (($probe.Output -join "`n").Trim() -split "`n" | Select-Object -Last 1).Trim()
     if ($probe.ExitCode -ne 0 -or -not $printed) {
-      return [pscustomobject]@{ Ok = $false; Token = $token; Message = '无法在 Codex 窗口显示进度。' }
+      return [pscustomobject]@{ Ok = $false; Token = $token; Message = 'Codexウィンドウに進行状況を表示できませんでした。' }
     }
     return [pscustomobject]@{ Ok = $true; Token = $printed; Message = '' }
   }
@@ -493,7 +493,7 @@ function Show-DreamSkinOperationUi {
   return [pscustomobject]@{
     Ok = ($probe.ExitCode -eq 0)
     Token = $Token
-    Message = if ($probe.ExitCode -eq 0) { '' } else { '无法更新 Codex 窗口内的操作状态。' }
+    Message = if ($probe.ExitCode -eq 0) { '' } else { 'Codexウィンドウ内の操作状態を更新できませんでした。' }
   }
 }
 
@@ -512,7 +512,7 @@ function Invoke-DreamSkinLiveRemove {
     return [pscustomobject]@{
       Attempted = $false
       Removed = $false
-      Message = '没有可连接的活动会话；已记录暂停，当前窗口可能仍显示皮肤。'
+      Message = '接続可能なセッションがありません。一時停止は記録されましたが、現在のウィンドウにはスキンが表示されたままの可能性があります。'
     }
   }
 
@@ -536,21 +536,21 @@ function Invoke-DreamSkinLiveRemove {
   if ($removal.ExitCode -eq 0) {
     if ($token) {
       $null = Show-DreamSkinOperationUi -Session $session -Phase finish -Token $token `
-        -UiState success -Message '皮肤已暂停' -TimeoutMs 1500
+        -UiState success -Message 'スキンを一時停止しました' -TimeoutMs 1500
     }
     return [pscustomobject]@{
       Attempted = $true
       Removed = $true
-      Message = '皮肤已暂停'
+      Message = 'スキンを一時停止しました'
     }
   }
   if ($token) {
     $null = Show-DreamSkinOperationUi -Session $session -Phase finish -Token $token `
-      -UiState error -Message '暂停失败，请重试' -TimeoutMs 1500
+      -UiState error -Message '一時停止に失敗しました。再試行してください' -TimeoutMs 1500
   }
   return [pscustomobject]@{
     Attempted = $true
     Removed = $false
-    Message = '已记录暂停，但卸下当前皮肤失败；可重试暂停或完全恢复。'
+    Message = '一時停止は記録されましたが、現在のスキンを解除できませんでした。一時停止を再試行するか、ChatGPTを復元してください。'
   }
 }
