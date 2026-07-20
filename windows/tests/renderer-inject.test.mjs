@@ -19,6 +19,26 @@ assert.doesNotMatch(
   /main\.main-surface\s*>\s*header\.app-header-tint\s*\{[^}]*\b(?:position|z-index)\s*:/,
   "The skin must preserve Codex's native fixed header so the side-panel toggle remains reachable.",
 );
+assert.match(
+  css,
+  /html\.codex-dream-skin \.composer-surface-chrome\s*\{[^}]*border:\s*1px solid var\(--dream-line\) !important;[^}]*border-radius:\s*18px !important;[^}]*background:\s*var\(--dream-composer-surface\) !important;/,
+  "The prompt composer must use a fully rounded, bordered, opaque background.",
+);
+assert.match(
+  css,
+  /html\.codex-dream-skin\.dream-art-wide \.composer-surface-chrome\s*\{[^}]*background:\s*var\(--dream-composer-surface\) !important;[^}]*border:\s*1px solid var\(--dream-line\) !important;/,
+  "The prompt composer must retain its opaque background and full border over wide artwork.",
+);
+assert.match(
+  css,
+  /html\.codex-dream-skin \.dream-home-utility\s*\{[^}]*border-radius:\s*18px !important;[^}]*background:\s*var\(--dream-immersive-composer\) !important;/,
+  "The project and branch utility bar must remain a separate translucent rounded surface.",
+);
+assert.match(
+  css,
+  /\.dream-home:has\(\.dream-home-utility\) \.composer-surface-chrome\s*\{[^}]*border:\s*1px solid var\(--dream-line\) !important;[^}]*border-radius:\s*18px !important;[^}]*background:\s*var\(--dream-composer-surface\) !important;/,
+  "The utility bar must not remove the prompt composer's top corners or top border.",
+);
 
 function createFixture({
   shellPresent,

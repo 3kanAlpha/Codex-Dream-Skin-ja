@@ -6,6 +6,7 @@
   --dream-canvas: color-mix(in oklab, oklch(0.975 0.006 35) 96%, var(--dream-accent));
   --dream-surface: color-mix(in oklab, oklch(0.988 0.004 35) 97%, var(--dream-accent));
   --dream-surface-raised: color-mix(in oklab, oklch(0.995 0.003 35) 98%, var(--dream-accent));
+  --dream-composer-surface: color-mix(in oklab, var(--dream-surface-raised) 96%, white 4%);
   --dream-sidebar: color-mix(in oklab, oklch(0.965 0.006 35) 94%, var(--dream-accent));
   --dream-text: oklch(0.25 0.018 30);
   --dream-text-muted: oklch(0.48 0.018 30);
@@ -33,6 +34,7 @@
   --dream-canvas: color-mix(in oklab, oklch(0.16 0.012 245) 96%, var(--dream-accent));
   --dream-surface: color-mix(in oklab, oklch(0.19 0.012 245) 95%, var(--dream-accent));
   --dream-surface-raised: color-mix(in oklab, oklch(0.23 0.012 245) 95%, var(--dream-accent));
+  --dream-composer-surface: color-mix(in oklab, var(--dream-surface-raised) 92%, white 8%);
   --dream-sidebar: color-mix(in oklab, oklch(0.145 0.014 245) 94%, var(--dream-accent));
   --dream-text: oklch(0.93 0.008 245);
   --dream-text-muted: oklch(0.7 0.012 245);
@@ -368,9 +370,9 @@ html.codex-dream-skin .composer-surface-chrome {
   color: var(--dream-text) !important;
   border: 1px solid var(--dream-line) !important;
   border-radius: 18px !important;
-  background: color-mix(in oklab, var(--dream-surface-raised) 95%, transparent) !important;
+  background: var(--dream-composer-surface) !important;
   box-shadow: 0 12px 34px color-mix(in oklab, var(--dream-accent) 8%, transparent) !important;
-  backdrop-filter: blur(14px) saturate(1.06) !important;
+  backdrop-filter: none !important;
 }
 
 html.codex-dream-skin .ProseMirror {
@@ -489,8 +491,8 @@ html.codex-dream-skin.dream-art-wide main.main-surface.dream-home-shell .dream-h
    gradients are cleared below so the control never appears double stacked. */
 html.codex-dream-skin.dream-art-wide .composer-surface-chrome {
   color: var(--dream-text) !important;
-  background: var(--dream-immersive-composer) !important;
-  border: 0 !important;
+  background: var(--dream-composer-surface) !important;
+  border: 1px solid var(--dream-line) !important;
   box-shadow: 0 10px 30px color-mix(in oklab, var(--dream-canvas) 20%, transparent),
     inset 0 0 0 1px var(--dream-immersive-line) !important;
   backdrop-filter: none !important;
@@ -501,21 +503,20 @@ html.codex-dream-skin.dream-art-wide .composer-surface-chrome::before {
 }
 
 /* Current Codex builds render the home project picker in a hashed utility bar.
-   Merge it with the composer so the bottom control reads as one surface. */
+   Keep it translucent and visually separate from the brighter prompt composer. */
 html.codex-dream-skin .dream-home-utility {
   border: 1px solid var(--dream-line) !important;
-  border-bottom: 0 !important;
-  border-radius: 18px 18px 0 0 !important;
+  border-radius: 18px !important;
   background: var(--dream-immersive-composer) !important;
   box-shadow: none !important;
 }
 
 html.codex-dream-skin .dream-home:has(.dream-home-utility) .composer-surface-chrome {
-  border-radius: 0 0 18px 18px !important;
+  border: 1px solid var(--dream-line) !important;
+  border-radius: 18px !important;
+  background: var(--dream-composer-surface) !important;
   box-shadow: 0 10px 30px color-mix(in oklab, var(--dream-canvas) 20%, transparent),
-    inset 1px 0 var(--dream-immersive-line),
-    inset -1px 0 var(--dream-immersive-line),
-    inset 0 -1px var(--dream-immersive-line) !important;
+    inset 0 0 0 1px var(--dream-immersive-line) !important;
 }
 
 /* Plugins, scheduled tasks and search routes ship opaque sticky wrappers.
